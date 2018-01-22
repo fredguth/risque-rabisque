@@ -5,6 +5,7 @@ export interface PaintState {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   position: Object;
+  brushOn: Boolean;
 }
 
 export default class PaintApp extends Component {
@@ -19,31 +20,59 @@ export default class PaintApp extends Component {
       ...this.reset,
       canvas,
       ctx,
-      position
+      position,
+      brushOn: false
     };
     this.state = this.reset;
   }
   mouseAction(event) {
-    this.update(this.state, {
+    let cmd = {
       type: event.type,
       payload: {x:event.offsetX, y:event.offsetY}
-    })
+    }
+    // console.log(cmd);
+    this.update(this.state, cmd);
   }
 
   update(state, cmd) {
     let newState:PaintState = state;
     let {ctx, position} = state;
-
     ctx.strokeStyle = "#df4b26";
     ctx.lineJoin = "round";
     ctx.lineWidth = 5;
     ctx.moveTo(position.x, position.y);
-    ctx.lineTo(cmd.payload.x, cmd.payload.y);
-    ctx.stroke()
     newState = {
-      ...newState,
-      ctx,
-      position:cmd.payload
+         ...newState,
+         ctx,
+         position: cmd.payload
+    }
+
+    switch (cmd.type) {
+      case 'mousedown': {
+        newState = {
+         ...newState,
+         brushOn: true
+        }
+        break;
+      }
+      case 'mouseup': {
+        newState = {
+         ...newState,
+         brushOn: false
+        }
+        break;
+      }
+      case 'mousemove': {
+        if (state.brushOn) {
+          ctx.lineTo(cmd.payload.x, cmd.payload.y);
+          ctx.stroke()
+          newState = {
+            ...newState,
+            ctx
+          }
+        }
+        break
+      }
     }
     //return newState;
     this.state = newState;
