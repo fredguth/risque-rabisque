@@ -1,59 +1,53 @@
+
 import Component, { tracked } from '@glimmer/component';
-export default class extends Component {
-  mouseDown(event) {
-     console.log(`${event.type}`);
-  }
-  mouseMove(event) {
-    console.log(`${event.type}`);
-  }
-  mouseUp(event) {
-    console.log(`${event.type}`);
-  }
+
+export interface PaintState {
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  position: Object;
 }
-// import Component, { tracked } from '@glimmer/component';
 
-// export interface PaintState {
-//   canvas: HTMLCanvasElement;
-//   ctx: CanvasRenderingContext2D;
-// }
+export default class PaintApp extends Component {
+  @tracked state: PaintState;
+  reset: PaintState; // initial state
 
-// export default class PaintApp extends Component {
-//   @tracked state: PaintState;
-//   reset: PaintState; // initial state
+  didInsertElement() {
+    let canvas = <HTMLCanvasElement> (this.bounds.firstNode as HTMLElement).querySelector('canvas');
+    let ctx = canvas.getContext('2d');
+    let position = {x:0, y:0};
+    this.reset = {
+      ...this.reset,
+      canvas,
+      ctx,
+      position
+    };
+    this.state = this.reset;
+  }
+  mouseAction(event) {
+    this.update(this.state, {
+      type: event.type,
+      payload: {x:event.offsetX, y:event.offsetY}
+    })
+  }
 
-//   didInsertElement() {
-//     let canvas = <HTMLCanvasElement> (this.bounds.firstNode as HTMLElement).querySelector('canvas');
-//     let ctx = canvas.getContext('2d');
-//     canvas.addEventListener('mousedown', this.mouseDown);
-//     canvas.addEventListener('mouseup', this.mouseUp);
-//     canvas.addEventListener('mousemove', this.mouseMove);
-//     this.reset = {
-//       ...this.reset,
-//       canvas,
-//       ctx
-//     }
-//   }
-//   willDestroy(){
-//     // this.reset.canvas.removeEventListener('mousedown', this.mouseDown);
-//     // this.reset.canvas.removeEventListener('mouseup', this.mouseUp);
-//     // this.reset.canvas.removeEventListener('mousemove', this.mouseMove);
-//   }
-//   mouseDown(event) {
-//      console.log(`${event.type}`);
-//      // update(this.state, {type: 'mousedown'})
-//   }
-//   mouseMove(event) {
-//     //console.log(`move:${event.offsetX}, ${event.offsetY}`);
-//     console.log(`${event.type}`);
-//   }
-//   mouseUp(event) {
-//     console.log(`${event.type}`);
-//   }
-//   update(state, cmd) {
-//     let newState:PaintState = this.state | this.reset;
+  update(state, cmd) {
+    let newState:PaintState = state;
+    let {ctx, position} = state;
 
-//     return newState;
-//   }
+    ctx.strokeStyle = "#df4b26";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 5;
+    ctx.moveTo(position.x, position.y);
+    ctx.lineTo(cmd.payload.x, cmd.payload.y);
+    ctx.stroke()
+    newState = {
+      ...newState,
+      ctx,
+      position:cmd.payload
+    }
+    //return newState;
+    this.state = newState;
+  }
 
 
-// }
+}
