@@ -1,6 +1,7 @@
 
 import Component, { tracked } from '@glimmer/component';
-import { distanceBetween2Points, angleBetween2Points} from '../../../utils/trig';
+import { distanceBetween2Points, middlePointBetween, angleBetween2Points} from '../../../utils/trig';
+import { throttle } from '../../../utils/run';
 
 export interface PaintState {
   canvas: HTMLCanvasElement;
@@ -18,12 +19,12 @@ export default class PaintApp extends Component {
     let canvas = <HTMLCanvasElement> (this.bounds.firstNode as HTMLElement).querySelector('canvas');
     let ctx = canvas.getContext('2d');
     let background = new Image();
-    background.src = "https://mags.clubeami.com.br/357/files/assets/common/page-html5-substrates/page0003.jpg";
-    background.onload = () => {
-      canvas.width = background.width;
-      canvas.height = background.height;
-      ctx.drawImage(background, 0,0);
-    }
+    // background.src = "https://mags.clubeami.com.br/357/files/assets/common/page-html5-substrates/page0003.jpg";
+    // background.onload = () => {
+    //   canvas.width = background.width;
+    //   canvas.height = background.height;
+    //   ctx.drawImage(background, 0,0);
+    // }
     let brush = new Image();
     brush.src = 'brush_ps16.png';
     let position = {x:0, y:0};
@@ -76,25 +77,45 @@ export default class PaintApp extends Component {
         break;
       }
       case 'mousemove': {
-        // http://www.tricedesigns.com/2012/01/04/sketching-with-html5-canvas-and-brush-images/
-        //
-        if (state.brushOn) {
-          // ctx.lineTo(cmd.payload.x, cmd.payload.y);
-          // ctx.stroke();
-          let halfBrushW = brush.width/2;
-          let halfBrushH = brush.height/2;
-          let distance = parseInt(distanceBetween2Points(position, cmd.payload));
-          let angle = angleBetween2Points(position, cmd.payload);
-          let x, y, z:number = -1;
-          for (z=0; (z<=distance||z==0); z++) {
-            x = position.x + (Math.sin(angle) * z) - halfBrushW;
-            y = position.y + (Math.cos(angle) * z) - halfBrushH;
-            ctx.drawImage(brush, x, y);
-          }
-          newState = {
-            ...newState,
-            ctx
-          }
+        //if (state.brushOn) {
+        if (true) {
+          throttle(() => {
+            // references:
+            // http://perfectionkills.com/exploring-canvas-drawing-techniques/
+            // http://www.tricedesigns.com/2012/01/04/sketching-with-html5-canvas-and-brush-images/
+            //
+            // simple line:
+            // ctx.lineTo(cmd.payload.x, cmd.payload.y);
+            // ctx.stroke();
+            //
+            // brush:
+            // let halfBrushW = brush.width/2;
+            // let halfBrushH = brush.height/2;
+            // let distance = parseInt(distanceBetween2Points(position, cmd.payload));
+            // let angle = angleBetween2Points(position, cmd.payload);
+            // let x, y, z:number = -1;
+            // for (z=0; (z<=distance||z==0); z++) {
+            //   x = position.x + (Math.sin(angle) * z) - halfBrushW;
+            //   y = position.y + (Math.cos(angle) * z) - halfBrushH;
+            //   ctx.drawImage(brush, x, y);
+            // }
+            //
+            // qudratic curve:
+            // let distance = parseInt(distanceBetween2Points(position, cmd.payload));
+            // let angle = angleBetween2Points(position, cmd.payload);
+            // let midPoint = {
+            //   x: position.x + (Math.sin(angle) * distance),
+            //   y: position.y + (Math.cos(angle) * distance)
+            // };
+            // ctx.quadraticCurveTo(midPoint.x, midPoint.y, cmd.payload.x, cmd.payload.y);
+            // ctx.stroke();
+            // newState = {
+            //   ...newState,
+            //   ctx
+            // }
+            console.log((new Date).toISOString());
+           });
+
         }
         break
       }
