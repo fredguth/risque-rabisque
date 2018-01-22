@@ -17,6 +17,13 @@ export default class PaintApp extends Component {
   didInsertElement() {
     let canvas = <HTMLCanvasElement> (this.bounds.firstNode as HTMLElement).querySelector('canvas');
     let ctx = canvas.getContext('2d');
+    let background = new Image();
+    background.src = "https://mags.clubeami.com.br/357/files/assets/common/page-html5-substrates/page0003.jpg";
+    background.onload = () => {
+      canvas.width = background.width;
+      canvas.height = background.height;
+      ctx.drawImage(background, 0,0);
+    }
     let brush = new Image();
     brush.src = 'brush_ps16.png';
     let position = {x:0, y:0};
