@@ -1,7 +1,6 @@
-export const throttle = function (fn, period, opts) {
-  opts = opts || {};
-  var leading = opts.leading === false ? false : true; // defaults to true
-  var trailing = !!opts.trailing; // defaults to false
+export const throttle = function (fn, period) {
+  var leading =  true; // defaults to true
+  var trailing = false; // defaults to false
   var args, cached;
   var timeout = null, prev = 0;
 

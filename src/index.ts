@@ -14,6 +14,6 @@ app.registerInitializer({
   }
 });
 
-app.renderComponent('PaintApp', containerElement, null);
+app.renderComponent('RisqueRabisque', containerElement, null);
 
 app.boot();

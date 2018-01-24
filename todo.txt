@@ -1,0 +1,6 @@
+todo.txt
+
+- curve.ts
+export drawCurve
+
+export addPointToCurve
