@@ -4,7 +4,7 @@ import Point from './point';
 // // https://github.com/szimek/signature_pad
 // // https://medium.com/square-corner-blog/smoother-signatures-be64515adb33
 
-export function addPointToCurve(point:Point, points:Array<Point>) {
+export function addPointToCurve(point:Point, points:Array<Point>, velocity, width, minWidth, maxWidth) {
 
   if (points.length > 2) {
 
@@ -16,21 +16,21 @@ export function addPointToCurve(point:Point, points:Array<Point>) {
     const b = temp.c1;
 
     const curve  = new Bezier(points[1], a, b, points[2]);
-
+    const { widths } = calculateCurveWidths(curve, velocity, width, minWidth, maxWidth);
     points.shift();
-    return curve;
+
+    return { curve, widths };
   }
 
-  return null;
+  return { curve: null, widths: {start:width, end:width, velocity}};
 }
 
 
 // //https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Higher-order_curves
-export function drawCurve (ctx, curve) {
-
-  console.log('ctx:', JSON.stringify(ctx));
+export function drawCurve (ctx, curve, startWidth, endWidth) {
 
   const drawSteps = Math.floor(curve.length());
+  const widthDelta = endWidth - startWidth;
 
   ctx.beginPath();
 
@@ -61,8 +61,10 @@ export function drawCurve (ctx, curve) {
     // sAngle  The starting angle, in radians (0 is at the 3 o'clock position of the arc's circle)
     // eAngle  The ending angle, in radians
     // counterclockwise  Optional.
+    const width = startWidth + (ttt * widthDelta);
+
     ctx.moveTo(x, y);
-    ctx.arc(x, y, ctx.lineWidth, 0, 2 * Math.PI, false);
+    ctx.arc(x, y, width, 0, 2 * Math.PI, false);
   }
 
   ctx.closePath();
@@ -103,6 +105,23 @@ function getCurveControlPoints (s1, s2, s3) {
     c1: new Point(m1.x + tx, m1.y + ty),
     c2: new Point(m2.x + tx, m2.y + ty),
   };
+};
+
+function calculateCurveWidths (curve, lastvelocity, lastWidth, minWidth, maxWidth, velocityFilterWeight=0.7,) {
+  const startPoint = curve.startPoint;
+  const endPoint = curve.endPoint;
+  const widths = { start: null, end: null, velocity:lastvelocity };
+
+  const velocity = (velocityFilterWeight * endPoint.velocityFrom(startPoint))
+   + ((1 - velocityFilterWeight) * lastvelocity);
+
+  const newWidth = Math.max(maxWidth / (velocity + 1), minWidth);
+
+  widths.start = lastWidth;
+  widths.end = newWidth;
+  widths.velocity = velocity;
+
+  return { widths };
 };
 
 class Bezier {
@@ -163,17 +182,3 @@ class Bezier {
   };
 }
 
-
-
-
-
-
-// // SignaturePad.prototype._drawDot = function (point) {
-// //   const ctx = this._ctx;
-// //   const width = (typeof this.dotSize) === 'function' ? this.dotSize() : this.dotSize;
-
-// //   ctx.beginPath();
-// //   this._drawPoint(point.x, point.y, width);
-// //   ctx.closePath();
-// //   ctx.fill();
-// // };

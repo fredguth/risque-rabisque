@@ -34,5 +34,9 @@ export default class Point {
    return (this.x === p.x && this.y === p.y && this.timestamp === p.timestamp);
   }
 
+  velocityFrom (p) {
+  return (this.timestamp !== p.timestamp) ? this.distanceTo(p) / (this.timestamp - p.timestamp) : 1;
+};
+
 
 }
